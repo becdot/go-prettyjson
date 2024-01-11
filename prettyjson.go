@@ -41,6 +41,9 @@ type Formatter struct {
 
 	// Newline string. To print without new lines set it to empty string. Default is \n.
 	Newline string
+
+	// Whether to sort map keys alphabetically. Default is true.
+	SortKeys bool
 }
 
 // NewFormatter returns a new formatter with following default values.
@@ -55,6 +58,7 @@ func NewFormatter() *Formatter {
 		DisabledColor:   false,
 		Indent:          2,
 		Newline:         "\n",
+		SortKeys:        true,
 	}
 }
 
@@ -107,7 +111,7 @@ func (f *Formatter) pretty(v interface{}, depth int) string {
 	case nil:
 		return f.sprintColor(f.NullColor, "null")
 	case map[string]interface{}:
-		return f.processMap(val, depth)
+		return f.processMap(val, depth, f.SortKeys)
 	case []interface{}:
 		return f.processArray(val, depth)
 	}
@@ -131,7 +135,7 @@ func (f *Formatter) processString(s string) string {
 	return f.sprintColor(f.StringColor, s)
 }
 
-func (f *Formatter) processMap(m map[string]interface{}, depth int) string {
+func (f *Formatter) processMap(m map[string]interface{}, depth int, sortKeys bool) string {
 	if len(m) == 0 {
 		return "{}"
 	}
@@ -145,7 +149,9 @@ func (f *Formatter) processMap(m map[string]interface{}, depth int) string {
 		keys = append(keys, key)
 	}
 
-	sort.Strings(keys)
+	if sortKeys {
+		sort.Strings(keys)
+	}
 
 	for _, key := range keys {
 		val := m[key]

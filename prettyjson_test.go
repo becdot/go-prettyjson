@@ -84,12 +84,14 @@ func TestMarshal(t *testing.T) {
     "e": false,
     "f": { "key": "str" },
 	"g": {},
-	"h": []
+	"h": [],
+	"aa": "str2"
   }
 }`)
 
 	expectedFormat := `{
   %s: {
+    %s: %s,
     %s: %s,
     %s: %s,
     %s: %s,
@@ -106,6 +108,7 @@ func TestMarshal(t *testing.T) {
 	expected := fmt.Sprintf(expectedFormat,
 		blueBold(`"key"`),
 		blueBold(`"a"`), greenBold(`"str"`),
+		blueBold(`"aa"`), greenBold(`"str2"`),
 		blueBold(`"b"`), cyanBold("100"),
 		blueBold(`"c"`), blackBold("null"),
 		blueBold(`"d"`), yelloBold("true"),
@@ -167,6 +170,34 @@ func TestStringPercentEscape(t *testing.T) {
 
 	expected := fmt.Sprintf(expectedFormat,
 		blueBold(`"foo"`), greenBold(`"foo%2Fbar"`),
+	)
+
+	if string(r) != expected {
+		t.Errorf("actual: %s\nexpected: %s", string(r), expected)
+	}
+}
+
+func TestSortKeys(t *testing.T) {
+	f := NewFormatter()
+	f.SortKeys = false
+	s := `{"foo":"foo", "bar": "bar"}`
+	r, err := f.Format([]byte(s))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	expectedFormat := `{
+  %s: %s,
+  %s: %s
+}`
+
+	blueBold := color.New(color.FgBlue, color.Bold).SprintFunc()
+	greenBold := color.New(color.FgGreen, color.Bold).SprintFunc()
+
+	expected := fmt.Sprintf(expectedFormat,
+		blueBold(`"foo"`), greenBold(`"foo"`),
+		blueBold(`"bar"`), greenBold(`"bar"`),
 	)
 
 	if string(r) != expected {
